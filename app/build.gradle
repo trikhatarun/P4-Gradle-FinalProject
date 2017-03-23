@@ -38,3 +38,14 @@ dependencies {
     compile 'com.google.http-client:google-http-client:1.22.0'
     compile 'com.google.http-client:google-http-client-android:1.20.0'
 }
+appengine {
+    downloadSdk = true
+    httpAddress = "0.0.0.0"
+    appcfg {
+        oauth2 = true
+    }
+    endpoints {
+        getClientLibsOnBuild = true
+        getDiscoveryDocsOnBuild = true
+    }
+}
