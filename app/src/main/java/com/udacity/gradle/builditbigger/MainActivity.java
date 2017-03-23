@@ -1,17 +1,22 @@
 package com.udacity.gradle.builditbigger;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
+import com.android.jokedisplaylibrary.JokeDisplayActivity;
 import com.example.trikh.myapplication.backend.myApi.MyApi;
+import com.example.trikh.myapplication.backend.myApi.model.MyBean;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 
 import java.io.IOException;
 
@@ -48,43 +53,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void tellJoke(View view) {
-
+        Log.v("position: ", "on click executed");
+        new GetJokeAsyncTask().execute(this);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
-    class GetJokeAsyncTask extends AsyncTask<Context, Void, String> {
+    private class GetJokeAsyncTask extends AsyncTask<Context, Void, MyBean> {
         private Context mContext;
         private MyApi mApiService = null;
 
         @Override
-        protected String doInBackground(Context... params) {
-            if (mApiService == null) {  // Only do this once
+        protected MyBean doInBackground(Context... params) {
+            if (mApiService == null) {
                 MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
                         new AndroidJsonFactory(), null)
-                        .setRootUrl("http://10.0.2.2:8080/_ah/api/")
+                        .setRootUrl("http://127.0.0.1:8080/_ah/api/")
                         .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
                             @Override
                             public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
                                 abstractGoogleClientRequest.setDisableGZipContent(true);
                             }
                         });
-                // end options for devappserver
-
                 mApiService = builder.build();
             }
-
             mContext = params[0];
-
             try {
-                return mApiService.tellJokeGCE().getFields();
+                return mApiService.tellJokeGCE().execute();
             } catch (IOException e) {
-                return e.getMessage();
+                Log.v("Error", e.toString());
+                return null;
             }
         }
 
         @Override
-        protected void onPostExecute(String result) {
-            Toast.makeText(mContext, result, Toast.LENGTH_LONG).show();
+        protected void onPostExecute(MyBean myBean) {
+            Intent displayJokeIntent = new Intent(mContext, JokeDisplayActivity.class);
+            displayJokeIntent.putExtra("joke", myBean.getData());
+            startActivity(displayJokeIntent);
         }
     }
 }
