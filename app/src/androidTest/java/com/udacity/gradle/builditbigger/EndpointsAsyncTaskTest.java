@@ -6,8 +6,6 @@ import android.util.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +17,7 @@ public class EndpointsAsyncTaskTest {
         try {
             GetJokeAsyncTask endpointsAsyncTask = new GetJokeAsyncTask();
             endpointsAsyncTask.execute();
-            String result = endpointsAsyncTask.get(30, TimeUnit.SECONDS);
+            String result = endpointsAsyncTask.get();
 
             assertNotNull(result);
             assertTrue(result.length() > 0);
